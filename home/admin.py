@@ -26,4 +26,8 @@ class HotelBookingAdmin(admin.ModelAdmin):
                     'start_date',
                     'end_date',
                     'booking_type']
+    
+@admin.register(Cities)
+class Cities(admin.ModelAdmin):
+    list_display = ['city_name']
 

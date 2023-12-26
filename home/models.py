@@ -6,7 +6,7 @@ import uuid
 
 class BaseModel(models.Model):
     # Unique identifier for each record
-    uid = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
+    uid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, primary_key=True)
      
     # Records the date when the record is created
     created_at = models.DateField(auto_now_add=True)  
@@ -16,6 +16,12 @@ class BaseModel(models.Model):
     
     class Meta:
         abstract = True
+        
+class Cities(BaseModel):
+    city = models.CharField(max_length = 100)
+    
+    def __str__(self) -> str:
+        return self.city
     
 class Amenities(BaseModel):
     # Model representing various amenities available
@@ -31,6 +37,8 @@ class Hotel(BaseModel):
     description = models.TextField(max_length=500)
     amenity_name = models.ManyToManyField(Amenities)
     room_count = models.PositiveIntegerField(default=10)
+    city_name = models.OneToOneField(Cities, related_name="city_name", on_delete = models.CASCADE)
+    
 
     def __str__(self) -> str:
         return self.hotel_name
