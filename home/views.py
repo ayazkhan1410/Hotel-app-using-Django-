@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 from .models import (Hotel,Amenities,Cities,HotelBooking)
 from django.db.models import Q
-from django.core.paginator import Paginator
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 
 
 def check_booking(request,checkin,checkout,uid, room_count):
@@ -18,7 +18,12 @@ def check_booking(request,checkin,checkout,uid, room_count):
         return False
     else:
         return True
+    
+def check_dates(request):
+    pass
+
 def hotel(request):
+    
     # Fetching data from models
     amenities_objs = Amenities.objects.all()
     hotel_objs = Hotel.objects.all()  
@@ -28,7 +33,10 @@ def hotel(request):
     sort = request.GET.get('sort')
     search = request.GET.get('search')
     amenities = request.GET.getlist('amenities')
-
+    
+    checkin = request.POST.get('checkin')
+    checkout = request.POST.get('checkout')
+        
     # Sort Function
     if sort:
         if sort == "ASC":
@@ -48,20 +56,29 @@ def hotel(request):
     if amenities:
         hotel_objs = hotel_objs.filter(amenity_name__amenity_name__in = amenities).distinct()
         
-    # Paginator Function
-    # paginator = Paginator(hotel_objs, 4)
-    # page_number = request.GET.get("page")
-    # page_obj = paginator.get_page(paginator)
-    # print(page_obj)
-                        
+    # Paginator Code
+    page = request.GET.get('page', 1)
+    paginator = Paginator(hotel_objs, 3)
+    
+    try:
+        queryset = paginator.get_page(page)
+        print(queryset)
+    except PageNotAnInteger:
+        queryset = paginator.get_page(1)
+    except EmptyPage:
+        queryset = paginator.page(paginator.num_pages)
+    
+    # print(paginator.count)    # tell total items
+    # print(paginator.num_pages)  # tell total number of pages
+                 
     context = {
         
         'amenities_objs':amenities_objs,
-        'hotel_objs':hotel_objs,
         'sort':sort, 
         'search': search,
         'amenities':amenities,
         'city_objs':city_objs,
+        'queryset':queryset
         
         }
     
