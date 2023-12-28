@@ -1,14 +1,28 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.models import User
-from .models import Hotel,Amenities
+from .models import (Hotel,Amenities,Cities,HotelBooking)
 from django.db.models import Q
 from django.core.paginator import Paginator
 
+
+def check_booking(request,checkin,checkout,uid, room_count):
+    # sourcery skip: assign-if-exp, boolean-if-exp-identity, remove-unnecessary-cast
+    qs = HotelBooking.objects.filter(
+        start_date__lte = checkin,
+        end_date__gte = checkout,
+        hotel__uid = uid
+    )
+    if len(qs) >= room_count:
+        return False
+    else:
+        return True
 def hotel(request):
+    # Fetching data from models
     amenities_objs = Amenities.objects.all()
-    hotel_objs = Hotel.objects.all()
+    hotel_objs = Hotel.objects.all()  
+    city_objs = Cities.objects.all()
     
     # storing user search, sort data into a sortiable 
     sort = request.GET.get('sort')
@@ -34,24 +48,55 @@ def hotel(request):
     if amenities:
         hotel_objs = hotel_objs.filter(amenity_name__amenity_name__in = amenities).distinct()
         
-        
     # Paginator Function
-    # paginator = Paginator(hotel_objs, 4)  # Assuming 3 items per page
+    # paginator = Paginator(hotel_objs, 4)
     # page_number = request.GET.get("page")
-    # page_obj = paginator.get_page(page_number)
-                
+    # page_obj = paginator.get_page(paginator)
+    # print(page_obj)
+                        
     context = {
         
         'amenities_objs':amenities_objs,
         'hotel_objs':hotel_objs,
         'sort':sort, 
         'search': search,
-        'amenities':amenities
+        'amenities':amenities,
+        'city_objs':city_objs,
         
         }
+    
     return render(request, 'index.html',context)
 
-def login_page(request):
+def hotel_details(request, uid):
+    hotel_obj = Hotel.objects.get(uid=uid)
+
+    if request.method == "POST":
+        checkin = request.POST.get("checkin")
+        checkout = request.POST.get('checkout')
+        hotel = Hotel.objects.get(uid=uid)
+        room_count = hotel.room_count  # Fetch room_count from the hotel object
+        
+        if not check_booking(request, checkin, checkout, uid, room_count):  # Pass room_count here
+            messages.warning(request, "Hotel is booked in these days")
+        else:
+            HotelBooking.objects.create(
+                hotel=hotel,
+                user=request.user,
+                start_date=checkin,
+                end_date=checkout,
+                booking_type='pre paid'
+            )
+            messages.info(request, "Your Hotel has been Booked successfully")
+
+    context = {'hotel_obj': hotel_obj}
+    return render(request, "hotel_details.html", context)
+
+
+
+
+
+def login_page(request):  # sourcery skip: assign-if-exp, use-named-expression
+    
     if request.method != "POST":
         return render(request, "login.html")
 
@@ -69,7 +114,17 @@ def login_page(request):
         return redirect('login')  # Redirect back to login if the password is incorrect
 
     login(request, user)
-    return redirect("hotel")
+    
+    
+    # This code checks if there's a 'next' parameter in the URL. If it exists:
+    # It redirects the user to the URL specified in the 'next' parameter after a successful login.
+    # If 'next' is not set, it redirects the user to the default page (/hotel/).
+    
+    redirect_url = request.GET.get('next') 
+    if redirect_url:
+        return redirect(redirect_url)
+    else:
+        return redirect('/hotel/')  
 
 def register_page(request):
     if request.method != "POST":
@@ -89,3 +144,9 @@ def register_page(request):
     user.save()
     messages.success(request, "Account created successfully")
     return redirect("login")
+
+def log_out(request):
+    
+    logout(request)
+    return redirect('hotel')
+    

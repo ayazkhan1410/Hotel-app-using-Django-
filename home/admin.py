@@ -11,8 +11,9 @@ class HotelAdmin(admin.ModelAdmin):
                     'hotel_price',
                     'description',
                     'room_count',
+                    'city_name',
     ]
-                    #'city_name'# Removed 'amenity_name' as it's a ManyToManyField
+    ordering = ['room_count']
 
 @admin.register(Hotelimages)
 class HotelimagesAdmin(admin.ModelAdmin):
@@ -29,5 +30,5 @@ class HotelBookingAdmin(admin.ModelAdmin):
     
 @admin.register(Cities)
 class Cities(admin.ModelAdmin):
-    list_display = ['city_name']
+    list_display = ['city']
 

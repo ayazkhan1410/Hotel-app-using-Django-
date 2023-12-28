@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block title %}<title> Details </title>{% endblock %}
+
+{% block body %}
+<nav class="navbar navbar-expand-lg bg-primary-subtle">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="/hotel">HOTELPARADISE.COM</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav text-light" style="font-family: 'Montserrat', sans-serif;;">
+          <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="/hotel/">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#">Contact Us</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#">About us</a>
+          </li>
+       
+        </ul>
+      </div>
+    </div>
+  </nav>
+  
+  
+<div class="container mt-5 pt-5">
+    <div class="row search-card-result">
+                
+        <div class="col-md-3">      
+
+                <img class="img-fluid" src="/media/{{hotel_obj.images.first.hotel_images}}"  alt="Card image cap">
+      
+        </a></div>
+
+     
+   
+        <div class="col-md-5">
+
+            <h5>{{hotel_obj.hotel_name}}</h5>
+            <p>
+                {{hotel_obj.description}}
+            </p>
+<!-- 
+            <p>
+                {%for amenitie in hotel_objs.amenities.all %}
+                <b>{{amenitie.amenity_name}}</b>,
+                {% endfor %}
+            </p> -->
+            
+        </div>
+        <div class="col-md-2 border-left text-center more-offers">
+            
+            <!-- <p>Place.com</p> -->
+            <!-- <p>${{hotels_obj.hotel_price}}</p>
+            <p>Room count</p>
+            <p>{{hotels_obj.room_count}}</p> -->
+
+
+            
+        </div>
+        <div class="col-md-2 border-left text-center more-offers">
+           
+            <!-- <div class="btn btn-success">View deal </div> -->
+        </div>
+    </div>
+
+ 
+    {% if request.user.is_authenticated %}
+
+    <div class="filter-card">
+
+        <h5>Book Hotel</h5>
+        <hr>
+        
+        {% if messages %}
+        <div class="alert alert-warning" role="">
+    
+         {% for message in messages %}
+
+        {{message}}
+
+        {% endfor %}
+     </div>    
+    {% endif %}
+        <form method="post">
+            {% csrf_token %}
+            <div class="filter-card">
+
+            <div class="row form-group">
+                <div class="col-md-10">
+                    <label for="mintopay">Check in</label>
+                    <p>
+                        <input type="date" name="checkin" id="checkin" class="form-control">
+                    </p>
+                </div>
+                <div class="col-md-10">
+                    <label for="maxtopay">Check out</label>
+                    <p>
+                        <input type="date" name="checkout" id="checkout" class="form-control">
+                    </p>
+                </div>
+            </div>
+            
+           
+            <div class="row form-group">
+                <div class="col-md-10">
+                    
+                    <input type="submit" class="btn btn-primary btn-block" value="Book">
+                </div>
+            </div>
+        </form>
+    </div>
+
+    {% else %}
+
+    <!-- /hotel/login?next={{ request.path }} represents a URL with a 'next' parameter used for redirecting users after they log in: -->
+    <!-- /hotel/login: The base URL for the login page.
+    ?next=: A way to add extra information to the URL as a query parameter.
+    {{ request.path }}: A placeholder in Django templates that gets replaced by the current page's URL when the link is clicked. -->
+    
+    <a href="/hotel/login?next={{ request.path }}" class="btn btn-success">Login to book</a>
+
+    {% endif %}
+
+</div>
+
+
+
+{% endblock %}
